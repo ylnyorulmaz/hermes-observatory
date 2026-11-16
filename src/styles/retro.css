@@ -1,0 +1,126 @@
+/* src/styles/retro.css — 8-bit CRT theme: pixel panels, scanlines, sprites, FX. */
+
+/* ---------- pixel panel / badge (hard corners, offset shadow) ---------- */
+.pixel-panel {
+  background: #121216;
+  border: 2px solid #2a2a2e;
+  box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.55);
+  image-rendering: pixelated;
+}
+
+.pixel-badge {
+  border: 1px solid #000;
+  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.05em;
+}
+
+.pixel-skeleton {
+  background: #1c1c20;
+  border: 1px solid #2a2a2e;
+  animation: skeletonPulse 1.4s steps(2) infinite;
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { background: #1c1c20; }
+  50% { background: #26262a; }
+}
+
+/* ---------- CRT frame / scanlines / vignette ---------- */
+.crt-frame {
+  background:
+    radial-gradient(ellipse at center, #0e0e12 0%, #060608 100%);
+}
+
+.crt-scanlines {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.22) 3px,
+    rgba(0, 0, 0, 0) 4px
+  );
+  mix-blend-mode: multiply;
+}
+
+.crt-vignette {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}
+
+/* ---------- idle speech bubble ---------- */
+.speech-bubble {
+  position: relative;
+  background: #1c1c20;
+  border: 2px solid #2a2a2e;
+  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.6);
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  letter-spacing: 0.03em;
+}
+
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -4px;
+  border: 5px solid transparent;
+  border-top-color: #2a2a2e;
+}
+
+/* ---------- busy glow ring + FX ---------- */
+.agent-glow {
+  border-color: #4ade80;
+  animation: glowPulse 1.2s steps(2) infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.55), 0 0 6px 1px rgba(74, 222, 128, 0.35);
+  }
+  50% {
+    box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.55), 0 0 16px 4px rgba(74, 222, 128, 0.65);
+  }
+}
+
+/* ---------- health bar (context/token usage) ---------- */
+.health-track {
+  background: #0a0a0c;
+  border: 1px solid #2a2a2e;
+}
+
+.health-fill {
+  background: #38d9d9;
+  transition: width 0.3s steps(4);
+}
+
+/* ---------- activity ticker marquee ---------- */
+.marquee {
+  overflow: hidden;
+}
+
+.marquee-inner {
+  display: inline-flex;
+  animation: marqueeScroll 30s linear infinite;
+}
+
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ---------- reduced motion: keep static frames, disable animation ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .pixel-skeleton,
+  .agent-glow,
+  .marquee-inner {
+    animation: none !important;
+  }
+
+  .agent-glow {
+    box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.55), 0 0 8px 1px rgba(74, 222, 128, 0.4);
+  }
+}
