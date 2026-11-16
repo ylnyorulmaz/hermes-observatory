@@ -129,23 +129,38 @@ function lastActivity(sessionId) {
   return row?.ts ?? null;
 }
 
+function mostRecentToolMessage(sessionId) {
+  return one(
+    'state',
+    `SELECT role, tool_name, content, tool_call_id, timestamp
+       FROM messages WHERE session_id = ? AND role = 'tool'
+      ORDER BY timestamp DESC, id DESC LIMIT 1`,
+    sessionId,
+  );
+}
+
+function toolAction(msg, sessionId, now) {
+  const command = findCommand(sessionId, msg.tool_call_id);
+  return {
+    kind: 'tool',
+    tool: msg.tool_name ?? 'tool',
+    detail: describeTool(msg.tool_name, msg.content, command),
+    since: msg.timestamp ?? now,
+    elapsed_s: Math.max(0, Math.floor(now - (msg.timestamp ?? now))),
+  };
+}
+
 function currentAction(sessionId, now) {
-  const msg = lastMessage(sessionId);
-  if (!msg) return null;
-  if (msg.role === 'tool') {
-    const command = findCommand(sessionId, msg.tool_call_id);
-    return {
-      kind: 'tool',
-      tool: msg.tool_name ?? 'tool',
-      detail: describeTool(msg.tool_name, msg.content, command),
-      since: msg.timestamp ?? now,
-      elapsed_s: Math.max(0, Math.floor(now - (msg.timestamp ?? now))),
-    };
-  }
-  if (msg.role === 'assistant') {
+  const last = lastMessage(sessionId);
+  if (!last) return null;
+  if (last.role === 'tool') return toolAction(last, sessionId, now);
+  if (last.role === 'assistant') {
     return { kind: 'thinking', detail: 'model yanıtı üretiyor' };
   }
-  return null;
+  // user / session_meta / other: fall back to the agent's last tool action.
+  const lastTool = mostRecentToolMessage(sessionId);
+  if (lastTool) return toolAction(lastTool, sessionId, now);
+  return { kind: 'thinking', detail: 'model yanıtı üretiyor' };
 }
 
 function sessionInfo(sess) {
